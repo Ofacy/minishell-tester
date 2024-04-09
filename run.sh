@@ -1,21 +1,24 @@
+#!/bin/bash
+
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
 #    run.sh                                             :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: bwisniew <bwisniew@student.42lyon.fr>      +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/03/21 13:41:27 by lcottet           #+#    #+#              #
-#    Updated: 2024/04/09 18:13:53 by lcottet          ###   ########.fr        #
+#    By: lcottet <lcottet@student.42lyon.fr>      +#+#+#+#+#+   +#+            #
+#                                                      #+#    #+#              #
+#                                                     ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-#!/bin/bash
 
 OUTPUT_EXIT=1
-ERROR_EXIT=0
+ERROR_EXIT=1
 STATUS_EXIT=0
 SUCCES_NB=0
+
+VALGRIND_FD_NB=$(valgrind --track-fds=yes --log-fd=1 -q ls | grep "FILE DESCRIPTORS" | awk '{ print $4 }')
 
 RED="\e[31m"
 BLUE="\e[34m"
@@ -45,7 +48,7 @@ for filename in $TESTS; do
 	cd ..
 	rm -rf exec_env
 	mkdir -p exec_env
-	cd exec_env && echo "$CMD" | ../../minishell 2> ../user_outputs/err 1> ../user_outputs/out
+	cd exec_env && echo "$CMD" | valgrind --track-fds=yes --log-file=../user_outputs/valgrind.log --leak-check=full --show-leak-kinds=all --error-exitcode=42 -q ../../minishell 2> ../user_outputs/err 1> ../user_outputs/out
 	USER_EXIT=$?
 	cd ..
 	OUT_DIFF=$(diff -U 3 bash_outputs/out user_outputs/out)
@@ -56,6 +59,15 @@ for filename in $TESTS; do
 		echo "OUTPUT DIFF:"
 		echo "$OUT_DIFF"
 		if [[ "$OUTPUT_EXIT" -eq 1 ]]; then
+			exit 1
+		fi
+	elif [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]; then
+		echo -e " ${RED}KO${ENDCOLOR}"
+		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}$'\n'$(cat $filename) $'\n'${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
+		echo -e $'\n'${RED}========== ${ENDCOLOR}Valgrind log${RED} ==========${ENDCOLOR}$'\n'
+		cat ./user_outputs/valgrind.log
+		echo -e $'\n'${RED}=====================$(seq 14 | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
+		if [[ "$ERROR_EXIT" -eq 1 ]]; then
 			exit 1
 		fi
 	elif [ "$(cat user_outputs/err | wc -l)" != "$(cat bash_outputs/err | sed '/bash: line [0-9]: `/d' | wc -l)" ]; then

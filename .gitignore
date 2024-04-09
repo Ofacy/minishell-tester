@@ -1,0 +1,5 @@
+bonjour
+bash_outputs
+user_outputs
+exec_env
+tests/*.sh

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    run.sh                                             :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lcottet <lcottet@student.42lyon.fr>        +#+  +:+       +#+         #
+#    By: bwisniew <bwisniew@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/21 13:41:27 by lcottet           #+#    #+#              #
-#    Updated: 2024/04/09 14:25:17 by lcottet          ###   ########.fr        #
+#    Updated: 2024/04/09 16:05:50 by bwisniew         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,6 +15,7 @@
 OUTPUT_EXIT=1
 ERROR_EXIT=0
 STATUS_EXIT=0
+SUCCES_NB=0
 
 RED="\e[31m"
 BLUE="\e[34m"
@@ -32,6 +33,7 @@ echo -e $'\n\n\n\n'"${YELLOW}Running $NB_TEST tests...${ENDCOLOR}"
 mkdir -p bash_outputs
 mkdir -p user_outputs
 OG_PWD=$(pwd)
+
 for filename in $TESTS; do
 	CMD=$(cat $filename)$'\n'exit
 	echo -n -e $'\n'"${CYAN}Running test${ENDCOLOR} $filename"
@@ -70,7 +72,16 @@ for filename in $TESTS; do
 			exit 1
 		fi
 	else
+		SUCCES_NB=$((SUCCES_NB+1))
 		echo -e " ${GREEN}OK${ENDCOLOR}"
 	fi
 	rm user_outputs/err user_outputs/out bash_outputs/err bash_outputs/out
 done
+
+echo -e $'\n\n\n\n' ${YELLOW}Total : ${ENDCOLOR}${GREEN}$SUCCES_NB OK${ENDCOLOR}  ${CYAN}/ $NB_TEST tests ${ENDCOLOR}${RED}"("$(($NB_TEST-$SUCCES_NB)) KO")"${ENDCOLOR}.
+
+if [[ $SUCCES_NB -eq $NB_TEST ]]; then
+	exit 0
+else
+	exit 1
+fi

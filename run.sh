@@ -18,7 +18,8 @@ ERROR_EXIT=1
 STATUS_EXIT=0
 SUCCES_NB=0
 
-VALGRIND_FD_NB=$(valgrind --track-fds=yes --log-fd=1 -q ls | grep "FILE DESCRIPTORS" | awk '{ print $4 }')
+echo | valgrind --track-fds=yes --log-file=./test -q cat
+VALGRIND_FD_NB=$(cat test | grep "FILE DESCRIPTORS" | awk '{ print $4 }')
 
 RED="\e[31m"
 BLUE="\e[34m"
@@ -55,13 +56,15 @@ for filename in $TESTS; do
 	ERR_DIFF=$(diff -U 3 bash_outputs/err user_outputs/err)
 	if [ "$OUTPUT_DIFF" != "" ]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
-		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}$'\n'$(cat $filename) $'\n'${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
+		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}
+		cat $filename
+		echo -e ${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
 		echo "OUTPUT DIFF:"
 		echo "$OUT_DIFF"
 		if [[ "$OUTPUT_EXIT" -eq 1 ]]; then
 			exit 1
 		fi
-	elif [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]; then
+	elif [[ "USER_EXIT" -eq 42 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}$'\n'$(cat $filename) $'\n'${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
 		echo -e $'\n'${RED}========== ${ENDCOLOR}Valgrind log${RED} ==========${ENDCOLOR}$'\n'

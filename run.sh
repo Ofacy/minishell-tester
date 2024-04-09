@@ -6,7 +6,7 @@
 #    By: bwisniew <bwisniew@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/21 13:41:27 by lcottet           #+#    #+#              #
-#    Updated: 2024/04/09 16:05:50 by bwisniew         ###   ########.fr        #
+#    Updated: 2024/04/09 18:13:53 by lcottet          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,6 +23,7 @@ YELLOW="\e[33m"
 MAGENTA="\e[35m"
 GREEN="\e[32m"
 CYAN="\e[36m"
+GRAY="\e[1;37m"
 ENDCOLOR="\e[0m"
 
 TESTS=$(ls -v1 tests/*.sh)
@@ -51,13 +52,15 @@ for filename in $TESTS; do
 	ERR_DIFF=$(diff -U 3 bash_outputs/err user_outputs/err)
 	if [ "$OUTPUT_DIFF" != "" ]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
+		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}$'\n'$(cat $filename) $'\n'${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
 		echo "OUTPUT DIFF:"
 		echo "$OUT_DIFF"
 		if [[ "$OUTPUT_EXIT" -eq 1 ]]; then
 			exit 1
 		fi
-	elif [ "$(cat user_outputs/err | uniq -w 14 | wc -l)" != "$(cat bash_outputs/err | uniq -w 14 | wc -l)" ]; then
+	elif [ "$(cat user_outputs/err | wc -l)" != "$(cat bash_outputs/err | sed '/bash: line [0-9]: `/d' | wc -l)" ]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
+		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}$'\n'$(cat $filename) $'\n'${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
 		echo "ERROR DIFF:"
 		echo "$ERR_DIFF"
 		if [[ "$ERROR_EXIT" -eq 1 ]]; then
@@ -65,6 +68,7 @@ for filename in $TESTS; do
 		fi
 	elif [ "$BASH_EXIT" != "$USER_EXIT" ]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
+		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}$'\n'$(cat $filename) $'\n'${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
 		echo "EXIT CODE DIFF:"
 		echo "Expected: $BASH_EXIT"
 		echo "Got: $USER_EXIT"
@@ -81,6 +85,7 @@ done
 echo -e $'\n\n\n\n' ${YELLOW}Total : ${ENDCOLOR}${GREEN}$SUCCES_NB OK${ENDCOLOR}  ${CYAN}/ $NB_TEST tests ${ENDCOLOR}${RED}"("$(($NB_TEST-$SUCCES_NB)) KO")"${ENDCOLOR}.
 
 if [[ $SUCCES_NB -eq $NB_TEST ]]; then
+	echo -e $'\n' 🎉${MAGENTA} Congratulations! You passed all tests! ${ENDCOLOR}🎉 $'\n'
 	exit 0
 else
 	exit 1

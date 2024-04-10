@@ -2,4 +2,5 @@ bonjour
 bash_outputs
 user_outputs
 exec_env
+test
 tests/*.sh

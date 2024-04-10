@@ -18,7 +18,7 @@ ERROR_EXIT=1
 STATUS_EXIT=0
 SUCCES_NB=0
 
-echo | valgrind --track-fds=yes --log-file=./test -q cat
+echo | valgrind --track-fds=yes --log-file=./test cat
 VALGRIND_FD_NB=$(cat test | grep "FILE DESCRIPTORS" | awk '{ print $4 }')
 
 RED="\e[31m"
@@ -49,11 +49,12 @@ for filename in $TESTS; do
 	cd ..
 	rm -rf exec_env
 	mkdir -p exec_env
-	cd exec_env && echo "$CMD" | valgrind --track-fds=yes --log-file=../user_outputs/valgrind.log --leak-check=full --show-leak-kinds=all --error-exitcode=42 -q ../../minishell 2> ../user_outputs/err 1> ../user_outputs/out
+	cd exec_env && echo "$CMD" | valgrind --track-fds=yes --log-file=../user_outputs/valgrind.log --leak-check=full --show-leak-kinds=all --error-exitcode=69 ../../minishell 2> ../user_outputs/err 1> ../user_outputs/out
 	USER_EXIT=$?
 	cd ..
 	OUT_DIFF=$(diff -U 3 bash_outputs/out user_outputs/out)
 	ERR_DIFF=$(diff -U 3 bash_outputs/err user_outputs/err)
+	bash valgrind_signal_remove.sh
 	if [ "$OUTPUT_DIFF" != "" ]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}
@@ -64,7 +65,7 @@ for filename in $TESTS; do
 		if [[ "$OUTPUT_EXIT" -eq 1 ]]; then
 			exit 1
 		fi
-	elif [[ "USER_EXIT" -eq 42 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]; then
+	elif [[ "USER_EXIT" -eq 69 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}$'\n'$(cat $filename) $'\n'${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
 		echo -e $'\n'${RED}========== ${ENDCOLOR}Valgrind log${RED} ==========${ENDCOLOR}$'\n'

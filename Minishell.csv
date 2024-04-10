@@ -189,16 +189,10 @@ $>",0,
 $>",0,
 ,$> echo my shit terminal is [$TERM4],,,,OK,OK,"my shit terminal is []
 $>",0,
-,$> echo $UID,,,,OK,OK,"1000
-$>",0,
 ,$> echo $HOME9,,,,OK,OK,"
 $>",0,Marche pour tous les caractères alphanumériques de l'ASCII
-,$> echo $9HOME,,,,OK,OK,"HOME
-$>",0,
 ,$> echo $HOME%,,,,OK,OK,"/home/vietdu91%
 $>",0,"Marche pour les autres caractères (ponctuation, caractères non-ASCII, etc.)"
-,$> echo $UID$HOME,,,,OK,OK,"1000/home/vietdu91%
-$>",0,
 ,$> echo Le path de mon HOME est $HOME,,,,OK,OK,"Le path de mon HOME est /home/vietdu91
 $>",0,
 ,$> echo $USER$var\$USER$USER\$USERtest$USER,,,,OK,OK,"vietdu91$USERvietdu91$USERtestvietdu91

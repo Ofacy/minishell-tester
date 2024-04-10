@@ -66,6 +66,18 @@ CYAN="\033[36m"
 GRAY="\033[1;37m"
 ENDCOLOR="\033[0m"
 
+function output_error() {
+	echo -e " ${RED}KO${ENDCOLOR}"
+	echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}
+	cat $filename
+	echo -e ${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
+	echo "OUTPUT DIFF:"
+	echo "$OUT_DIFF"
+	if [[ "$OUTPUT_EXIT" -eq 1 ]]; then
+		exit 1
+	fi
+}
+
 TESTS=$(ls -v1 tests/*.sh)
 if [[ $# -ne 0 ]]; then
 	TESTS=$(echo $@ | sed 's/ /\n/g')
@@ -111,16 +123,12 @@ for filename in $TESTS; do
 	if [[ $VALGRIND -eq 1 ]]; then
 		bash valgrind_signal_remove.sh
 	fi
-	if [ "$OUT_DIFF" != "" ]; then
-		echo -e " ${RED}KO${ENDCOLOR}"
-		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}
-		cat $filename
-		echo -e ${YELLOW}=====================$(seq $(echo $filename | wc -c) | xargs -I{} echo -n =)${ENDCOLOR}$'\n'
-		echo "OUTPUT DIFF:"
-		echo "$OUT_DIFF"
-		if [[ "$OUTPUT_EXIT" -eq 1 ]]; then
-			exit 1
-		fi
+	if [ "$OUT_DIFF" != "" ] && [[ $(echo $CMD | grep env | wc -l) -ne 0 ]] && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
+		output_error
+	elif [ "$OUT_DIFF" != "" ] && ([[ $(echo $CMD | grep -x "export" | wc -l) -ne 0 ]] || [[ $(echo $CMD | grep "export |" | wc -l) -ne 0 ]]) && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
+		output_error
+	elif [ "$OUT_DIFF" != "" ] && [ $(echo "$CMD" | grep env | wc -l) == '0' ] && [ $(echo "$CMD" | grep -x "export" | wc -l) == '0' ] && [ $(echo "$CMD" | grep "export |" | wc -l) == '0' ]; then
+		output_error
 	elif [[ $VALGRIND -eq 1 ]] && ([[ "USER_EXIT" -eq 69 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]); then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}

@@ -111,7 +111,7 @@ for filename in $TESTS; do
 	if [[ $VALGRIND -eq 1 ]]; then
 		bash valgrind_signal_remove.sh
 	fi
-	if [ "$OUTPUT_DIFF" != "" ]; then
+	if [ "$OUT_DIFF" != "" ]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}
 		cat $filename

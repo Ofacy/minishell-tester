@@ -123,12 +123,11 @@ for filename in $TESTS; do
 	if [[ $VALGRIND -eq 1 ]]; then
 		bash valgrind_signal_remove.sh
 	fi
-	echo "$CMD"
 	if [ "$OUT_DIFF" != "" ] && [[ $(echo $CMD | grep env | wc -l) -ne 0 ]] && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
 		output_error
 	elif [ "$OUT_DIFF" != "" ] && ([[ $(echo $CMD | grep -x "export" | wc -l) -ne 0 ]] || [[ $(echo $CMD | grep "export |" | wc -l) -ne 0 ]]) && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
 		output_error
-	elif [ "$OUT_DIFF" != "" ] && [[ $(echo $CMD | grep env | wc -l) -eq 0 ]] && [[ $(echo $CMD | grep -x "export" | wc -l) -eq 0 ]]; then
+	elif [ "$OUT_DIFF" != "" ] && [ $(echo "$CMD" | grep env | wc -l) == '0' ] && [ $(echo "$CMD" | grep -x "export" | wc -l) == '0' ] && [ $(echo "$CMD" | grep "export |" | wc -l) == '0' ]; then
 		output_error
 	elif [[ $VALGRIND -eq 1 ]] && ([[ "USER_EXIT" -eq 69 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]); then
 		echo -e " ${RED}KO${ENDCOLOR}"

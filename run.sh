@@ -110,7 +110,7 @@ for filename in $TESTS; do
 	echo -n -e $'\n'"${CYAN}Running test${ENDCOLOR} $filename"
 	rm -rf exec_env
 	mkdir -p exec_env
-	cd exec_env && echo "$CMD" | bash 2> ../bash_outputs/err 1> ../bash_outputs/out
+	cd exec_env && echo "$CMD" | ../bash 2> ../bash_outputs/err 1> ../bash_outputs/out
 	BASH_EXIT=$?
 	cd ..
 	rm -rf exec_env

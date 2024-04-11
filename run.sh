@@ -118,11 +118,11 @@ for filename in $TESTS; do
 	cd exec_env && echo "$CMD" | $VALGRIND_ARGS ../../minishell 2> ../user_outputs/err 1> ../user_outputs/out
 	USER_EXIT=$?
 	cd ..
-	OUT_DIFF=$(diff -U 3 bash_outputs/out user_outputs/out)
-	ERR_DIFF=$(diff -U 3 bash_outputs/err user_outputs/err)
 	if [[ $VALGRIND -eq 1 ]]; then
 		bash valgrind_signal_remove.sh
 	fi
+	ERR_DIFF=$(diff -U 3 bash_outputs/err user_outputs/err)
+	OUT_DIFF=$(diff -U 3 bash_outputs/out user_outputs/out)
 	if [[ $VALGRIND -eq 1 ]] && ([[ "USER_EXIT" -eq 69 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]); then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}

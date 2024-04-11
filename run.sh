@@ -123,13 +123,7 @@ for filename in $TESTS; do
 	if [[ $VALGRIND -eq 1 ]]; then
 		bash valgrind_signal_remove.sh
 	fi
-	if [ "$OUT_DIFF" != "" ] && [[ $(echo $CMD | grep env | wc -l) -ne 0 ]] && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
-		output_error
-	elif [ "$OUT_DIFF" != "" ] && ([[ $(echo $CMD | grep -x "export" | wc -l) -ne 0 ]] || [[ $(echo $CMD | grep "export |" | wc -l) -ne 0 ]]) && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
-		output_error
-	elif [ "$OUT_DIFF" != "" ] && [ $(echo "$CMD" | grep env | wc -l) == '0' ] && [ $(echo "$CMD" | grep -x "export" | wc -l) == '0' ] && [ $(echo "$CMD" | grep "export |" | wc -l) == '0' ]; then
-		output_error
-	elif [[ $VALGRIND -eq 1 ]] && ([[ "USER_EXIT" -eq 69 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]); then
+	if [[ $VALGRIND -eq 1 ]] && ([[ "USER_EXIT" -eq 69 || $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | wc -l) -ne 1 ]] || [[ $(cat ./user_outputs/valgrind.log | grep "FILE DESCRIPTORS:" | uniq -w 1 | awk '{print $4}') -ne $VALGRIND_FD_NB ]]); then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}
 		cat $filename
@@ -140,6 +134,12 @@ for filename in $TESTS; do
 		if [[ "$ERROR_EXIT" -eq 1 ]]; then
 			exit 1
 		fi
+	elif [ "$OUT_DIFF" != "" ] && [[ $(echo $CMD | grep env | wc -l) -ne 0 ]] && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
+		output_error
+	elif [ "$OUT_DIFF" != "" ] && ([[ $(echo $CMD | grep -x "export" | wc -l) -ne 0 ]] || [[ $(echo $CMD | grep "export |" | wc -l) -ne 0 ]]) && [[ $(cat ./user_outputs/out | wc -l) -ne $(cat ./bash_outputs/out | wc -l) ]]; then
+		output_error
+	elif [ "$OUT_DIFF" != "" ] && [ $(echo "$CMD" | grep env | wc -l) == '0' ] && [ $(echo "$CMD" | grep -x "export" | wc -l) == '0' ] && [ $(echo "$CMD" | grep "export |" | wc -l) == '0' ]; then
+		output_error
 	elif [ "$(cat user_outputs/err | wc -l)" != "$(cat bash_outputs/err | sed '/bash: line [0-9]: `/d' | wc -l)" ]; then
 		echo -e " ${RED}KO${ENDCOLOR}"
 		echo -e $'\n'${YELLOW}========== ${ENDCOLOR}$filename${YELLOW} ==========${ENDCOLOR}

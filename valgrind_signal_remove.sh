@@ -6,6 +6,6 @@ while [[ $(echo "${output}" | grep "Process terminating with default action of s
 done
 OUT=$(cat user_outputs/out)
 OUT_BASH=$(cat bash_outputs/out)
-echo "$OUT" | grep -v "LD_PRELOAD=" | grep -v "GLIBCPP_FORCE_NEW=" | grep -v "GLIBCXX_FORCE_NEW=" > user_outputs/out
+echo "$OUT" | grep -v "LD_PRELOAD=" | grep -v "LD_LIBRARY_PATH=" | grep -v "GLIBCPP_FORCE_NEW=" | grep -v "GLIBCXX_FORCE_NEW=" > user_outputs/out
 echo "$OUT_BASH" > bash_outputs/out
 echo "${output}" > user_outputs/valgrind.log
